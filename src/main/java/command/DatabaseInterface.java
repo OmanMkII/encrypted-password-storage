@@ -3,6 +3,7 @@ package main.java.command;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +29,14 @@ public class DatabaseInterface implements Database {
 	// The internal connection to the database, initialised at creation, and
 	// must be collapsed at the end of the program.
 	private Connection conn;
+	
+	// Entry structure
+	public static final Map<String, Integer> ENTRIES = new HashMap<>();
+		
+	static {
+			ENTRIES.put("NAME", 0);
+			ENTRIES.put("PASSWORD", 1);
+	};
 	
 	/**
 	 * The primary interface for the database: this class holds all SQL clauses

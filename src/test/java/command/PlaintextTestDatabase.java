@@ -3,10 +3,15 @@ package test.java.command;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import main.java.command.Database;
+import main.java.command.DatabaseInterface;
+import main.java.encoder.Encoder;
+import main.java.encoder.UTFEncoder;
 
 public class PlaintextTestDatabase implements Database {
 	
@@ -22,21 +27,6 @@ public class PlaintextTestDatabase implements Database {
 	public PlaintextTestDatabase() {
 		// local encoders to generate database
 
-		// collections of test user
-		String[] users = {
-				"Tom",
-				"Dave",
-				"Frank"
-		};
-		String[] passwords = {
-				"12345",
-				"password",
-				"random"
-		};
-		// TODO: encode user and enter into local list
-		for(int i = 0; i < users.length; i++) {
-//			String entry = Encoder.encode(user, password);
-		}
 		// Tom
 		
 	}
@@ -61,9 +51,23 @@ public class PlaintextTestDatabase implements Database {
 	}
 
 	@Override
-	@Deprecated
 	public boolean setupUsersTable() {
-		// nothing required
+		// collections of test user
+		String[] users = {
+				"Tom",
+				"Dave",
+				"Frank"
+		};
+		String[] passwords = {
+				"12345",
+				"password",
+				"random"
+		};
+		// TODO: encode user and enter into local list
+		for(int i = 0; i < users.length; i++) {
+//			String user = UTFEncoder.encryptText(users[i], passwords[i]);
+		}
+		
 		return false;
 	}
 
@@ -94,37 +98,62 @@ public class PlaintextTestDatabase implements Database {
 
 	@Override
 	public List<String> getUsers() {
-		return new ArrayList<String>(this.users);
+		return this.users;
 	}
 
 	@Override
 	public Map<String, Integer> getAllAccounts() {
-		// TODO Auto-generated method stub
-		return null;
+		Map<String, Integer> accounts = new HashMap<>();
+		for(Entry<String, Map<String, List<String>>> entry : this.accounts.entrySet()) {
+			if(!accounts.containsKey(entry.getKey())) {
+				accounts.put(entry.getKey(), 1);
+			} else {
+				accounts.put(entry.getKey(), accounts.get(entry.getKey()) + 1);
+			}
+		}
+		return accounts;
 	}
 
 	@Override
 	public int getNoUserAccounts(String user, String password) {
-		// TODO Auto-generated method stub
-		return 0;
+		return getUserAccounts(user, password).size();
 	}
 
 	@Override
 	public List<List<String>> getUserAccounts(String user, String password) {
-		// TODO Auto-generated method stub
-		return null;
+		List<List<String>> users = new ArrayList<>();
+		for(Entry<String, Map<String, List<String>>> entry : this.accounts.entrySet()) {
+			if(entry.getKey().equals(user)) {
+				users.addAll(entry.getValue().values());
+			}
+		}
+		return users;
+	}
+
+	@Override
+	public String getPassword(String user, String password, String accountName) {
+		List<String> data = getUserAccountDetails(user, password, accountName);
+		return data.get(DatabaseInterface.ENTRIES.get("PASSWORD"));
 	}
 
 	@Override
 	public List<String> getUserAccountDetails(String user, String password,
 			String acctName) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getPassword(String user, String password, String accountName) {
-		// TODO Auto-generated method stub
+		List<String> data = new ArrayList<>();
+		// find user
+		for(Entry<String, Map<String, List<String>>> entry : this.accounts.entrySet()) {
+			if(entry.getKey().equals(user)) {
+				// got user, now for acct
+				for(Entry<String, List<String>> e : entry.getValue().entrySet()) {
+					if(e.getKey().equals(acctName)) {
+						return e.getValue();
+					}
+				}
+			} else {
+				continue;
+			}
+		}
+		// failed
 		return null;
 	}
 
